@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install -g http-server
+
+    - name: Build and deploy
+      run: |
+        mkdir public
+        cp -r Build TemplateData index.html public/
+        npx http-server public -p 8080 &
+        sleep 10
+        curl http://localhost:8080 > /dev/null 2>&1
+        kill %1
+        cp -r public/* .
+        rm -rf public
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
